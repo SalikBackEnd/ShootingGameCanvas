@@ -9,6 +9,9 @@ const startgameBtn=document.querySelector('#startgameBtn')
 const modalEl=document.querySelector('#modalEl')
 const modalScoreEl=document.querySelector('#modalScoreEl')
 
+//audio effects
+
+
 let score=0
 class Player{
     constructor(x,y,radius,color){
@@ -117,6 +120,9 @@ function init(){
      scoreEl.innerHTML=score
 }
 function animate(){
+    setTimeout(()=>{
+        
+  
     animationId=requestAnimationFrame(animate)
     ctx.fillStyle='rgba(0,0,0,0.1)'
     ctx.fillRect(0,0,canvas.width,canvas.height)
@@ -125,7 +131,8 @@ function animate(){
         if(particle.alpha<=0){
             Particles.splice(parIndex,1)
         }else{
-        particle.update()
+            
+            particle.update()
 
         }
     })
@@ -145,6 +152,8 @@ function animate(){
         const dist=Math.hypot(player.x-enemy.x,player.y-enemy.y)
         //game over
         if(dist-enemy.radius-player.radius<1){
+            let gameoversound=new sound("gameover.wav")
+            gameoversound.play()
             cancelAnimationFrame(animationId)
             modalEl.style.display='flex'
             modalScoreEl.innerHTML=score
@@ -161,16 +170,16 @@ function animate(){
                     }))
                 }
 
-                if(enemy.radius-10>10){
+                if(enemy.radius-10>=10){
                     //increase score
                     score+=100
                     scoreEl.innerHTML=score
                     gsap.to(enemy,{
                         radius:enemy.radius-10
                     })
-                    setTimeout(()=>{
+                   // setTimeout(()=>{
                         Projectiles.splice(pindex,1)
-                    },0)
+                   // },0)
                 }else{
                     //increase score
                     score+=250
@@ -178,12 +187,15 @@ function animate(){
                     setTimeout(()=>{
                         Enemies.splice(eindex,1)
                         Projectiles.splice(pindex,1)
+                        let exploadsound=new sound("expload.wav")
+                        exploadsound.play()
                     },0)
                 }
                
             }
         })
     })
+},5)
 }
 function SpawnEnemies(){
     setInterval(()=>{
@@ -206,21 +218,41 @@ function SpawnEnemies(){
         y:Math.sin(angle)
     }
         Enemies.push(new Enemy(x,y,radius,color,velocity))
-        console.log(Enemies)
-    },1000)
+        
+    },1200)
 }
 addEventListener('click',(event)=>{
 
     const angle=Math.atan2(event.clientY-y,event.clientX-x)
     const velocity={
-        x:Math.cos(angle)*5,
-        y:Math.sin(angle)*5
+        x:Math.cos(angle)*7,
+        y:Math.sin(angle)*7
     }
+   
    Projectiles.push(new Projectile(x,y,5,'white',velocity))
+   setTimeout(()=>{
+    let shoot=new sound("shooting1.wav")
+    shoot.play()
+   },0)
 });
 startgameBtn.addEventListener('click',()=>{
     init()
     animate()
     SpawnEnemies()
+    
     modalEl.style.display='none'
 })
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){
+      this.sound.play();
+    }
+    this.stop = function(){
+      this.sound.pause();
+    }
+  }
